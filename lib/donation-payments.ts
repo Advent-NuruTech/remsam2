@@ -3,7 +3,7 @@ import "server-only";
 import { createHash, randomUUID } from "node:crypto";
 import { FieldValue, type DocumentData, type DocumentSnapshot } from "firebase-admin/firestore";
 import { HttpError } from "@/lib/auth";
-import { DONATION_QUOTE_TTL_MS, isDonationCurrency, isPresetDonationAmount, type DonationCurrency } from "@/lib/donation-options";
+import { DONATION_QUOTE_TTL_MS, isDonationAmount, isDonationCurrency, MAX_DONATION_AMOUNT, type DonationCurrency } from "@/lib/donation-options";
 import { firestore } from "@/lib/firestore";
 import { notifyAdmins, notifySafely, notifyUser } from "@/lib/notifications";
 import { initializeDonationPaystackPayment, isDonationPaystackReference, listPaystackPayments, verifyPaystackPayment, type PaystackVerification } from "@/lib/paystack";
@@ -39,7 +39,7 @@ function optionalString(record: RecordValue, key: string, max: number) {
 function donationInput(value: unknown): DonationInput {
   if (!isRecord(value)) throw new HttpError(400, "A JSON donation body is required");
   if (!isDonationCurrency(value.currency)) throw new HttpError(400, "Choose KES or USD");
-  if (!isPresetDonationAmount(value.currency, value.amount)) throw new HttpError(400, "Choose one of the available donation amounts");
+  if (!isDonationAmount(value.currency, value.amount)) throw new HttpError(400, `Donation amount must be between 1 and ${MAX_DONATION_AMOUNT[value.currency].toLocaleString("en-US")} ${value.currency}`);
   const email = requiredString(value, "email", 254).toLowerCase();
   if (!/^\S+@\S+\.\S+$/.test(email)) throw new HttpError(400, "email is invalid");
   const idempotencyKey = requiredString(value, "idempotencyKey", 100);
@@ -52,8 +52,8 @@ function donationInput(value: unknown): DonationInput {
 }
 
 function quoteInput(value: unknown): QuoteInput {
-  if (!isRecord(value) || !isDonationCurrency(value.currency) || !isPresetDonationAmount(value.currency, value.amount)) {
-    throw new HttpError(400, "Choose an available USD donation amount");
+  if (!isRecord(value) || !isDonationCurrency(value.currency) || !isDonationAmount(value.currency, value.amount)) {
+    throw new HttpError(400, `Enter a valid USD amount between 1 and ${MAX_DONATION_AMOUNT.USD.toLocaleString("en-US")}`);
   }
   if (value.currency !== "USD") throw new HttpError(400, "KES donations do not need a conversion quote");
   return { currency: value.currency, amount: value.amount };
