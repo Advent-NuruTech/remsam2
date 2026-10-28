@@ -25,6 +25,7 @@ const fallbackSettings: ChatSettings = {
 const FloatingActions = () => {
   const pathname = usePathname();
   const productDetail = /^\/products\/[^/]+\/?$/.test(pathname);
+  const hasBottomActionBar = productDetail || pathname === "/checkout";
   const [isWhatsAppOpen, setIsWhatsAppOpen] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -183,7 +184,7 @@ const FloatingActions = () => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.5, y: 100 }}
             transition={{ type: "spring", stiffness: 260, damping: 20 }}
-            className={`fixed left-6 z-50 md:left-8 ${productDetail ? "bottom-24 md:bottom-28" : "bottom-6 md:bottom-8"}`}
+            className={`fixed left-6 z-50 md:left-8 ${hasBottomActionBar ? "bottom-24 md:bottom-28" : "bottom-6 md:bottom-8"}`}
           >
             <motion.button
               onClick={scrollToTop}

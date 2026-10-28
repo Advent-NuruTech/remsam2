@@ -149,7 +149,7 @@ export default function AdminNavigation({ children, account }: { children: React
         <div className={`border-t border-white/10 p-4 ${compact ? "px-3" : ""}`}>
           <div className={`mb-2 flex items-center ${compact ? "justify-center" : "justify-between px-1"}`}>
             {!compact && <span className="text-xs font-medium text-emerald-100/70">Notifications</span>}
-            <NotificationBell dark placement="above" />
+            <NotificationBell dark placement="above" alignment="left" viewportPanel={isMobile} />
           </div>
           <a href="/" target="_blank" rel="noreferrer" title={compact ? "View website" : undefined} className={`mb-2 flex min-h-10 items-center rounded-xl text-sm text-emerald-50/75 transition hover:bg-white/10 hover:text-white ${compact ? "justify-center px-2" : "gap-3 px-3"}`}>
             <ExternalLink size={18} />
@@ -200,7 +200,7 @@ export default function AdminNavigation({ children, account }: { children: React
             <p className="truncate text-sm font-bold text-slate-900">{title}</p>
             <p className="text-xs text-slate-500">{subtitle}</p>
           </div>
-          <div className="ml-auto"><NotificationBell /></div>
+          <div className="ml-auto"><NotificationBell viewportPanel /></div>
           <Link href={home} className="ml-2 grid h-9 w-9 place-items-center rounded-xl bg-emerald-50 text-emerald-700" aria-label={isAccount ? "Account" : "Dashboard"}>
             <LayoutDashboard size={18} />
           </Link>
