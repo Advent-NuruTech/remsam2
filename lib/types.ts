@@ -249,10 +249,28 @@ export interface Donation {
   userId?: string;
   name?: string;
   email?: string;
-  amount: number;
-  currency: "USD";
+  /** Official settled and reported amount. Donations are always charged in KES. */
+  amountKes: number;
+  currency: "KES";
+  purpose?: string;
+  /** Original selection is retained for audit only when a USD quote was used. */
+  originalCurrency?: "USD";
+  originalAmount?: number;
+  conversionRate?: number;
   status: "pending" | "succeeded" | "failed" | "refunded";
-  paymentMethod: "manual";
+  paymentMethod: "paystack";
+  reference?: string;
+  source?: "firestore" | "paystack";
+  paystack?: {
+    reference: string;
+    authorizationUrl?: string;
+    amount: number;
+    currency: "KES";
+    status: string;
+    transactionId?: string | null;
+    initializedAt?: unknown;
+    paidAt?: unknown;
+  };
   createdAt?: unknown;
   updatedAt?: unknown;
 }

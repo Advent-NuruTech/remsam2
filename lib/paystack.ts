@@ -24,6 +24,8 @@ type VerifyData = {
   customer?: { email?: unknown };
 };
 
+type ListData = VerifyData[];
+
 export type PaystackVerification = {
   reference: string;
   status: string;
@@ -107,6 +109,44 @@ export async function initializePaystackPayment(input: {
   return { authorizationUrl: data.authorization_url, reference: data.reference };
 }
 
+export async function initializeDonationPaystackPayment(input: {
+  email: string;
+  amount: number;
+  reference: string;
+  donationId: string;
+  purpose?: string;
+  originalCurrency: "KES" | "USD";
+  originalAmount: number;
+  conversionRate?: number;
+}) {
+  const data = await paystackRequest<InitializeData>("/initialize", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: input.email,
+      amount: input.amount,
+      currency: "KES",
+      reference: input.reference,
+      callback_url: configuredCallbackUrl(),
+      metadata: {
+        kind: "donation",
+        donationId: input.donationId,
+        ...(input.purpose ? { purpose: input.purpose } : {}),
+        originalCurrency: input.originalCurrency,
+        originalAmount: input.originalAmount,
+        ...(input.conversionRate ? { conversionRate: input.conversionRate } : {}),
+      },
+    }),
+  });
+  if (typeof data.authorization_url !== "string" || !data.authorization_url.startsWith("https://")) {
+    throw new HttpError(502, "The payment service returned an invalid checkout URL.");
+  }
+  if (data.reference !== input.reference) {
+    throw new HttpError(502, "The payment service returned an invalid transaction reference.");
+  }
+  return { authorizationUrl: data.authorization_url, reference: data.reference };
+}
+
 export async function verifyPaystackPayment(reference: string): Promise<PaystackVerification> {
   const data = await paystackRequest<VerifyData>(`/verify/${encodeURIComponent(reference)}`, { method: "GET" });
   if (
@@ -130,6 +170,25 @@ export async function verifyPaystackPayment(reference: string): Promise<Paystack
   };
 }
 
+/** Fetch recent provider records for the administrator's reconciliation view. */
+export async function listPaystackPayments(): Promise<PaystackVerification[]> {
+  const data = await paystackRequest<ListData>("?perPage=100", { method: "GET" });
+  if (!Array.isArray(data)) throw new HttpError(502, "The payment service returned invalid payment records.");
+  return data.flatMap((payment) => {
+    if (typeof payment.reference !== "string" || typeof payment.status !== "string" || typeof payment.amount !== "number" || !Number.isSafeInteger(payment.amount) || typeof payment.currency !== "string") return [];
+    return [{
+      reference: payment.reference,
+      status: payment.status,
+      amount: payment.amount,
+      currency: payment.currency,
+      ...(typeof payment.email === "string" ? { email: payment.email } : typeof payment.customer?.email === "string" ? { email: payment.customer.email } : {}),
+      ...(typeof payment.id === "string" || typeof payment.id === "number" ? { transactionId: String(payment.id) } : {}),
+      ...(typeof payment.paid_at === "string" ? { paidAt: payment.paid_at } : {}),
+      metadata: payment.metadata,
+    }];
+  });
+}
+
 /** Verify Paystack's HMAC-SHA512 signature before parsing a webhook event. */
 export function isValidPaystackSignature(rawBody: string | Buffer, signature: string | null) {
   if (!signature) return false;
@@ -145,4 +204,8 @@ export function isValidPaystackSignature(rawBody: string | Buffer, signature: st
 
 export function isPaystackReference(value: unknown): value is string {
   return typeof value === "string" && /^RH-[A-Za-z0-9_-]{16,100}$/.test(value);
+}
+
+export function isDonationPaystackReference(value: unknown): value is string {
+  return typeof value === "string" && /^RD-[A-Za-z0-9_-]{16,100}$/.test(value);
 }

@@ -1,8 +1,9 @@
 import { after } from "next/server";
 import { NextRequest, NextResponse } from "next/server";
 import { errorResponse } from "@/lib/auth";
+import { resolveDonationPayment } from "@/lib/donation-payments";
 import { notifyPaidOrder, resolvePaystackPayment } from "@/lib/paystack-orders";
-import { isPaystackReference, isValidPaystackSignature } from "@/lib/paystack";
+import { isDonationPaystackReference, isPaystackReference, isValidPaystackSignature } from "@/lib/paystack";
 
 export const runtime = "nodejs";
 
@@ -18,9 +19,13 @@ export async function POST(request: NextRequest) {
     const reference = data && typeof data === "object" && "reference" in data ? data.reference : undefined;
     // We deliberately verify with Paystack again; a signed webhook alone is not
     // enough to establish the expected order amount and currency.
-    if (type === "charge.success" && isPaystackReference(reference)) {
-      const result = await resolvePaystackPayment(reference);
-      if (result.becamePaid) after(() => notifyPaidOrder(result.order));
+    if (type === "charge.success") {
+      if (isPaystackReference(reference)) {
+        const result = await resolvePaystackPayment(reference);
+        if (result.becamePaid) after(() => notifyPaidOrder(result.order));
+      } else if (isDonationPaystackReference(reference)) {
+        await resolveDonationPayment(reference);
+      }
     }
     return NextResponse.json({ received: true }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
