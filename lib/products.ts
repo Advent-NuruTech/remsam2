@@ -9,6 +9,7 @@ import type { PublicProduct } from "@/lib/types";
 
 const STATUSES = ["active", "inactive", "draft"] as const;
 const MAX_IMAGES = 10;
+const SALE_TYPES = ["retail", "wholesale"] as const;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -137,6 +138,22 @@ function variantsField(input: Record<string, unknown>) {
   return variants;
 }
 
+function wholesaleTiersField(input: Record<string, unknown>) {
+  if (input.wholesaleTiers === undefined) return undefined;
+  if (!Array.isArray(input.wholesaleTiers) || !input.wholesaleTiers.length || input.wholesaleTiers.length > 20) {
+    throw new HttpError(400, "Wholesale products need between 1 and 20 quantity tiers");
+  }
+  const tiers = input.wholesaleTiers.map((value, index) => {
+    if (!isRecord(value)) throw new HttpError(400, `Wholesale tier ${index + 1} is invalid`);
+    return {
+      minQuantity: numberField(value, "minQuantity", { required: true, integer: true, min: 1 })!,
+      price: numberField(value, "price", { required: true, min: 0.01 })!,
+    };
+  }).sort((left, right) => left.minQuantity - right.minQuantity);
+  if (new Set(tiers.map((tier) => tier.minQuantity)).size !== tiers.length) throw new HttpError(400, "Each wholesale quantity tier must start at a different quantity");
+  return tiers;
+}
+
 export function validateProductBody(value: unknown, partial = false): Record<string, unknown> {
   if (!isRecord(value)) throw new HttpError(400, "A JSON product body is required");
 
@@ -150,6 +167,10 @@ export function validateProductBody(value: unknown, partial = false): Record<str
   if (status !== undefined && !STATUSES.includes(status as (typeof STATUSES)[number])) {
     throw new HttpError(400, "status must be active, inactive or draft");
   }
+  const saleType = value.saleType;
+  if (saleType !== undefined && !SALE_TYPES.includes(saleType as (typeof SALE_TYPES)[number])) {
+    throw new HttpError(400, "saleType must be retail or wholesale");
+  }
 
   const result: Record<string, unknown> = {};
   const assign = (key: string, next: unknown) => {
@@ -157,7 +178,10 @@ export function validateProductBody(value: unknown, partial = false): Record<str
   };
 
   const variants = variantsField(value);
+  const wholesaleTiers = wholesaleTiersField(value);
   assign("variants", variants);
+  assign("saleType", saleType);
+  assign("wholesaleTiers", wholesaleTiers);
   assign("name", name);
   assign("description", description);
   assign("features", richTextField(value, "features", { max: 10000 }));
@@ -193,6 +217,10 @@ export function validateProductBody(value: unknown, partial = false): Record<str
     result.stockQuantity = variants.reduce((sum, v) => sum + v.stockQuantity, 0);
     result.inStock = variants.some((v) => v.stockQuantity > 0);
   }
+  if ((saleType === "wholesale" || (!partial && saleType === "wholesale")) && !wholesaleTiers?.length) {
+    throw new HttpError(400, "Wholesale products need at least one quantity tier");
+  }
+  if (wholesaleTiers?.length) result.price = wholesaleTiers[0].price;
   if (partial && Object.keys(result).length === 0) {
     throw new HttpError(400, "No supported product fields were provided");
   }
@@ -205,6 +233,7 @@ export function validateProductBody(value: unknown, partial = false): Record<str
     result.specifications ??= {};
     result.featured ??= false;
     result.status ??= "active";
+    result.saleType ??= "retail";
     result.organicCertified ??= false;
     result.seoKeywords ??= [];
     result.seoTitle ??= name;

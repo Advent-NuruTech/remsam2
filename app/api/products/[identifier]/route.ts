@@ -62,6 +62,7 @@ export async function PUT(
       if (key in input && (input[key] === "" || input[key] === null)) data[key] = FieldValue.delete();
     }
     if ("originalPrice" in input && input.originalPrice === null) data.originalPrice = FieldValue.delete();
+    if (data.saleType === "retail") data.wholesaleTiers = FieldValue.delete();
     if (typeof data.name === "string") {
       const slug = productSlug(data.name);
       await assertUniqueProductSlug(slug, identifier);

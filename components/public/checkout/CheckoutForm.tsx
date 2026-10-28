@@ -42,7 +42,7 @@ function PaystackLoadingOverlay() {
           <LoaderCircle aria-hidden="true" className="h-10 w-10 animate-spin" />
         </div>
         <ShieldCheck aria-hidden="true" className="mx-auto mt-6 h-6 w-6 text-red-300" />
-        <h2 className="mt-3 text-2xl font-bold">Connecting to Paystack</h2>
+        <h2 className="mt-3 text-2xl font-bold">Connecting to secure environment</h2>
         <p className="mt-3 text-sm leading-6 text-slate-200">Please wait while we securely prepare your payment. Do not close or refresh this page.</p>
         <div className="mx-auto mt-6 h-1.5 w-36 overflow-hidden rounded-full bg-white/15">
           <div className="h-full w-1/2 animate-pulse rounded-full bg-red-400" />
@@ -95,7 +95,7 @@ export default function CheckoutForm({ formData, errors, onChange, onSubmit, loa
         <div className="mx-auto flex max-w-3xl items-center gap-3">
           <p className="hidden text-sm font-medium text-slate-600 sm:block">Secure Paystack payment</p>
           <button type="submit" disabled={loading} className="min-h-12 flex-1 rounded-xl bg-red-600 px-6 py-3 font-bold text-white transition hover:bg-red-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 disabled:cursor-not-allowed disabled:opacity-50">
-            {loading ? "Connecting to Paystack…" : "Continue to secure payment"}
+            {loading ? "Connecting to secure environment…" : "Continue to secure payment"}
           </button>
         </div>
       </div>

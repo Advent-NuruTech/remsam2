@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import type { CartItem, PublicProduct, ProductVariant } from "@/lib/types";
+import { wholesaleMinimumQuantity, wholesaleUnitPrice } from "@/lib/wholesale";
 
 const CART_STORAGE_KEY = "cart";
 
@@ -73,10 +74,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const safeQuantity = Math.max(1, Math.floor(quantity));
     setItems((current) => {
       const existing = current.find((item) => item._id === product._id && item.variantId === variant?.id);
-      if (!existing) return [...current, { ...product, ...(variant ? { variantId: variant.id, variantName: variant.name, price: variant.price, stockQuantity: variant.stockQuantity, images: variant.image ? [variant.image] : product.images } : {}), quantity: safeQuantity }];
+      if (!existing) return [...current, { ...product, ...(variant ? { variantId: variant.id, variantName: variant.name, price: product.saleType === "wholesale" ? wholesaleUnitPrice(product, safeQuantity) : variant.price, stockQuantity: variant.stockQuantity, images: variant.image ? [variant.image] : product.images } : { price: wholesaleUnitPrice(product, safeQuantity) }), quantity: safeQuantity }];
       return current.map((item) =>
         item._id === product._id && item.variantId === variant?.id
-          ? { ...item, quantity: item.quantity + safeQuantity }
+          ? { ...item, quantity: item.quantity + safeQuantity, price: wholesaleUnitPrice(item, item.quantity + safeQuantity) }
           : item,
       );
     });
@@ -87,10 +88,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const updateQuantity = useCallback((productId: string, quantity: number) => {
-    const safeQuantity = Math.max(1, Math.floor(quantity));
     setItems((current) =>
       current.map((item) =>
-        cartItemKey(item) === productId ? { ...item, quantity: safeQuantity } : item,
+        cartItemKey(item) === productId ? (() => { const safeQuantity = Math.max(wholesaleMinimumQuantity(item), Math.floor(quantity)); return { ...item, quantity: safeQuantity, price: wholesaleUnitPrice(item, safeQuantity) }; })() : item,
       ),
     );
   }, []);

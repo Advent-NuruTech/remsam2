@@ -29,6 +29,11 @@ export interface ProductVariant {
   image?: string;
 }
 
+export interface WholesaleTier {
+  minQuantity: number;
+  price: number;
+}
+
 export interface Product {
   id?: string;
   name: string;
@@ -36,6 +41,8 @@ export interface Product {
   description: string;
   features?: string;
   variants?: ProductVariant[];
+  saleType?: "retail" | "wholesale";
+  wholesaleTiers?: WholesaleTier[];
   category: string;
   price: number;
   originalPrice?: number;

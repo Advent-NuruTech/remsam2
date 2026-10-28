@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { cartItemKey } from "@/components/providers/CartProvider";
 import type { CartItem as CartItemType } from "@/lib/types";
+import { wholesaleMinimumQuantity } from "@/lib/wholesale";
 
 export default function CartItem({
   item,
@@ -17,6 +18,7 @@ export default function CartItem({
   onQuantityChange: (productId: string, quantity: number) => void;
   index: number;
 }) {
+  const minimumQuantity = wholesaleMinimumQuantity(item);
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
@@ -56,17 +58,17 @@ export default function CartItem({
                     type="button"
                     whileTap={{ scale: 0.9 }}
                     onClick={() => onQuantityChange(cartItemKey(item), item.quantity - 1)}
-                    disabled={item.quantity <= 1}
+                    disabled={item.quantity <= minimumQuantity}
                     aria-label={`Decrease ${item.name} quantity`}
                     className={`px-3 py-2 rounded-l-lg transition-colors ${
-                      item.quantity <= 1 ? "text-gray-400 cursor-not-allowed" : "text-gray-600 hover:bg-gray-100"
+                      item.quantity <= minimumQuantity ? "text-gray-400 cursor-not-allowed" : "text-gray-600 hover:bg-gray-100"
                     }`}
                   >
                     <Minus size={16} />
                   </motion.button>
                   <input
                     type="number"
-                    min="1"
+                    min={minimumQuantity}
                     value={item.quantity}
                     aria-label={`${item.name} quantity`}
                     onChange={(event) => onQuantityChange(cartItemKey(item), Number.parseInt(event.target.value, 10) || 1)}

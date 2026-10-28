@@ -17,6 +17,7 @@ type CheckoutInput = ValidatedOrderInput & { idempotencyKey: string };
 type StockVariant = { id: string; name: string; price: number; stockQuantity: number; image?: string };
 type ProductUpdate = { variants?: StockVariant[]; stockQuantity: number };
 type Quote = { items: OrderItem[]; updates: Map<string, ProductUpdate>; subtotalMinor: number };
+type WholesaleTier = { minQuantity: number; price: number };
 
 function record(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -46,6 +47,21 @@ function normalizeVariants(value: unknown): StockVariant[] {
   });
 }
 
+function wholesalePrice(data: Record<string, unknown>, quantity: number): number | null {
+  if (data.saleType !== "wholesale") return null;
+  if (!Array.isArray(data.wholesaleTiers)) throw new HttpError(400, "This wholesale product has no valid quantity groups");
+  const tiers: WholesaleTier[] = data.wholesaleTiers.map((tier) => {
+    if (!record(tier) || !Number.isInteger(tier.minQuantity) || (tier.minQuantity as number) < 1 || typeof tier.price !== "number" || !Number.isFinite(tier.price) || tier.price <= 0) {
+      throw new HttpError(400, "This wholesale product has an invalid quantity group");
+    }
+    return { minQuantity: tier.minQuantity as number, price: tier.price };
+  }).sort((left, right) => left.minQuantity - right.minQuantity);
+  const minimum = tiers[0];
+  if (!minimum) throw new HttpError(400, "This wholesale product has no quantity groups");
+  if (quantity < minimum.minQuantity) throw new HttpError(400, `${String(data.name ?? "This wholesale product")} has a minimum order of ${minimum.minQuantity} units`);
+  return tiers.filter((tier) => tier.minQuantity <= quantity).at(-1)!.price;
+}
+
 function quoteOrder(input: ValidatedOrderInput, documents: Map<string, DocumentSnapshot<DocumentData>>): Quote {
   const updates = new Map<string, ProductUpdate>();
   let subtotalMinor = 0;
@@ -67,7 +83,7 @@ function quoteOrder(input: ValidatedOrderInput, documents: Map<string, DocumentS
     if ((!variant && data.inStock !== true) || !Number.isInteger(available) || available < requested.quantity) {
       throw new HttpError(400, `Insufficient stock for ${String(data.name)}${variant ? ` (${variant.name})` : ""}`);
     }
-    const unitMinor = positiveMinorAmount(Number(variant ? variant.price : data.price), String(data.name ?? "Product"));
+    const unitMinor = positiveMinorAmount(wholesalePrice(data, requested.quantity) ?? Number(variant ? variant.price : data.price), String(data.name ?? "Product"));
     if (variant) variant.stockQuantity -= requested.quantity;
     else update.stockQuantity -= requested.quantity;
     updates.set(product.id, update);

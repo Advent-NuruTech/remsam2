@@ -124,3 +124,9 @@ INSERT OR IGNORE INTO admin_updates (id, title, content)
   WHERE NOT EXISTS (SELECT 1 FROM admin_update_seeds WHERE id = 'paystack-secure-checkout');
 
 INSERT OR IGNORE INTO admin_update_seeds (id) VALUES ('paystack-secure-checkout');
+
+INSERT OR IGNORE INTO admin_updates (id, title, content)
+  SELECT 'wholesale-product-pricing', 'Wholesale product pricing is live', '<p>Products can now be sold as retail or wholesale. Choose Wholesale in a product, then add quantity groups with the minimum units and price per unit.</p><p>Customers can use the Wholesale only filter in the shop. Quantity rules and tier prices are also checked during secure checkout.</p>'
+  WHERE NOT EXISTS (SELECT 1 FROM admin_update_seeds WHERE id = 'wholesale-product-pricing');
+
+INSERT OR IGNORE INTO admin_update_seeds (id) VALUES ('wholesale-product-pricing');

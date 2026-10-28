@@ -127,7 +127,7 @@ function productParams(product: PublicProduct): unknown[] {
     product.id, product.slug, product.name, product.description, nullable(product.features),
     product.category, Number(product.price), product.originalPrice == null ? null : Number(product.originalPrice),
     JSON.stringify(product.images ?? []), product.inStock ? 1 : 0, Number(product.stockQuantity ?? 0),
-    JSON.stringify({ ...(product.specifications ?? {}), __variants: product.variants ?? [] }), nullable(product.brand), nullable(product.model),
+    JSON.stringify({ ...(product.specifications ?? {}), __variants: product.variants ?? [], __saleType: product.saleType ?? "retail", __wholesaleTiers: product.wholesaleTiers ?? [] }), nullable(product.brand), nullable(product.model),
     product.featured ? 1 : 0, nullable(product.seoTitle), nullable(product.seoDescription),
     JSON.stringify(product.seoKeywords ?? []), product.organicCertified ? 1 : 0,
     iso(product.harvestDate), nullable(product.seedType), iso(product.createdAt), iso(product.updatedAt),
@@ -226,7 +226,7 @@ export async function readD1Articles(): Promise<PublicArticle[]> {
 }
 
 export type D1ArticleFilters = { major?: string; subcategory?: string; legacySubcategory?: string; subcategoryParent?: string; legacy?: string; noMatch?: boolean; search?: string; downloadable?: boolean };
-export type D1ProductFilters = { category?: string; search?: string; featured?: boolean; status?: string };
+export type D1ProductFilters = { category?: string; search?: string; featured?: boolean; status?: string; saleType?: "wholesale" };
 
 type Page<T> = { items: T[]; total: number; currentPage: number; totalPages: number };
 function articleWhere(filters: D1ArticleFilters) {
@@ -249,6 +249,7 @@ function productWhere(filters: D1ProductFilters) {
   const conditions: string[] = []; const params: unknown[] = [];
   if (filters.category) { conditions.push("category = ?"); params.push(filters.category); }
   if (filters.featured !== undefined) { conditions.push("featured = ?"); params.push(filters.featured ? 1 : 0); }
+  if (filters.saleType === "wholesale") conditions.push("json_extract(specifications_json, '$.__saleType') = 'wholesale'");
   if (filters.status && filters.status !== "active") conditions.push("0 = 1");
   if (filters.search) { conditions.push("(instr(lower(name), ?) > 0 OR instr(lower(description), ?) > 0)"); params.push(filters.search, filters.search); }
   return { sql: conditions.length ? ` WHERE ${conditions.join(" AND ")}` : "", params };
@@ -314,20 +315,25 @@ export async function readD1ProductBySlug(slug: string): Promise<PublicProduct |
 }
 
 function rowsToProducts(rows: ProductRow[]): PublicProduct[] {
-  return rows.map((row) => ({
+  return rows.map((row) => {
+    const storedSpecifications = parseJson<Record<string, unknown>>(row.specifications_json, {});
+    return {
     id: row.id, _id: row.id, slug: row.slug, name: row.name, description: row.description,
     features: row.features ?? undefined, category: row.category, price: Number(row.price),
     originalPrice: row.original_price == null ? undefined : Number(row.original_price),
     images: parseJson(row.images_json, []), inStock: row.in_stock === 1,
-    stockQuantity: Number(row.stock_quantity), specifications: Object.fromEntries(Object.entries(parseJson<Record<string, unknown>>(row.specifications_json, {})).filter(([key]) => key !== "__variants")) as Record<string, string>,
-    variants: parseJson<{ __variants?: PublicProduct["variants"] }>(row.specifications_json, {}).__variants ?? [],
+    stockQuantity: Number(row.stock_quantity), specifications: Object.fromEntries(Object.entries(storedSpecifications).filter(([key]) => !["__variants", "__saleType", "__wholesaleTiers"].includes(key))) as Record<string, string>,
+    variants: Array.isArray(storedSpecifications.__variants) ? storedSpecifications.__variants as PublicProduct["variants"] : [],
+    saleType: storedSpecifications.__saleType === "wholesale" ? "wholesale" : "retail",
+    wholesaleTiers: Array.isArray(storedSpecifications.__wholesaleTiers) ? storedSpecifications.__wholesaleTiers as PublicProduct["wholesaleTiers"] : [],
     brand: row.brand ?? undefined, model: row.model ?? undefined, featured: row.featured === 1,
     seoTitle: row.seo_title ?? undefined, seoDescription: row.seo_description ?? undefined,
     seoKeywords: parseJson(row.seo_keywords_json, []), status: "active",
     organicCertified: row.organic_certified === 1, harvestDate: row.harvest_date ?? undefined,
     seedType: row.seed_type ?? undefined, createdAt: row.created_at ?? undefined,
     updatedAt: row.updated_at ?? undefined,
-  }));
+    };
+  });
 }
 
 export async function syncD1Article(article: PublicArticle): Promise<void> {

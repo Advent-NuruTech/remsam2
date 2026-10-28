@@ -96,7 +96,7 @@ const productStatements = products.docs.map((document) => {
     document.id, item.slug, item.name, item.description, item.features || null, item.category,
     Number(item.price), item.originalPrice == null ? null : Number(item.originalPrice),
     JSON.stringify(item.images || []), item.inStock ? 1 : 0, Number(item.stockQuantity || 0),
-    JSON.stringify(item.specifications || {}), item.brand || null, item.model || null,
+    JSON.stringify({ ...(item.specifications || {}), __variants: item.variants || [], __saleType: item.saleType || "retail", __wholesaleTiers: item.wholesaleTiers || [] }), item.brand || null, item.model || null,
     item.featured ? 1 : 0, item.seoTitle || null, item.seoDescription || null,
     JSON.stringify(item.seoKeywords || []), item.organicCertified ? 1 : 0,
     iso(item.harvestDate), item.seedType || null, iso(item.createdAt), iso(item.updatedAt),

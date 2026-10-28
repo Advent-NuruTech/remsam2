@@ -30,6 +30,7 @@ const ProductsPage = ({ initialCategory = "" }: { initialCategory?: string }) =>
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [category, setCategory] = useState(initialCategory || searchParams.get("category") || "");
+  const [saleType, setSaleType] = useState(searchParams.get("saleType") === "wholesale" ? "wholesale" : "");
   const [query, setQuery] = useState(searchParams.get("search") || "");
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const [total, setTotal] = useState(0);
@@ -62,6 +63,7 @@ const ProductsPage = ({ initialCategory = "" }: { initialCategory?: string }) =>
     let cancelled = false;
     const params = new URLSearchParams();
     if (category) params.set("category", category);
+    if (saleType) params.set("saleType", saleType);
     if (search) params.set("search", search);
     params.set("page", searchParams.get("page") || "1");
     setLoading(true);
@@ -84,7 +86,7 @@ const ProductsPage = ({ initialCategory = "" }: { initialCategory?: string }) =>
     return () => {
       cancelled = true;
     };
-  }, [category, search, searchParams, retry]);
+  }, [category, saleType, search, searchParams, retry]);
 
   const handleCategoryChange = (cat: string) => {
     setCategory(cat);
@@ -102,6 +104,13 @@ const ProductsPage = ({ initialCategory = "" }: { initialCategory?: string }) =>
     params.set("page", String(page));
     router.replace(`/products?${params}`);
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+  const handleSaleTypeChange = (next: string) => {
+    setSaleType(next);
+    const params = new URLSearchParams(searchParams.toString());
+    if (next) params.set("saleType", next); else params.delete("saleType");
+    params.delete("page");
+    router.replace(`/products${params.size ? `?${params}` : ""}`);
   };
 
   const categories = [
@@ -128,6 +137,7 @@ const ProductsPage = ({ initialCategory = "" }: { initialCategory?: string }) =>
           <Link href="/cart" aria-label={`Shopping cart, ${itemCount} ${itemCount === 1 ? "item" : "items"}`} className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-emerald-800 hover:bg-emerald-50 focus-visible:outline-2 focus-visible:outline-emerald-700"><ShoppingCart size={21} aria-hidden="true" />{itemCount > 0 && <span aria-hidden="true" className="absolute right-0 top-0 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">{itemCount > 99 ? "99+" : itemCount}</span>}</Link>
         </div>
         <nav aria-label="Product categories" className="mx-auto flex max-w-7xl gap-5 overflow-x-auto px-1 pt-2 sm:gap-7">
+          <button type="button" onClick={() => handleSaleTypeChange(saleType ? "" : "wholesale")} aria-pressed={saleType === "wholesale"} className={`flex shrink-0 items-center gap-2 border-b-2 px-1 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-emerald-700 ${saleType === "wholesale" ? "border-emerald-700 text-emerald-800" : "border-transparent text-gray-600 hover:text-emerald-700"}`}>Wholesale only</button>
           {categories.map((item) => <button key={item.value} type="button" onClick={() => handleCategoryChange(item.value)} aria-current={category === item.value ? "true" : undefined} className={`flex shrink-0 items-center gap-2 border-b-2 px-1 py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-emerald-700 ${category === item.value ? "border-emerald-700 text-emerald-800" : "border-transparent text-gray-600 hover:text-emerald-700"}`}>{item.value && (item.image ? <img src={item.image} alt="" className="h-8 w-8 rounded-full border border-gray-200 bg-white object-cover" /> : <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-400"><ImageOff size={15} aria-hidden="true" /></span>)}{item.value ? item.label : "All"}</button>)}
         </nav>
       </div>
@@ -135,7 +145,7 @@ const ProductsPage = ({ initialCategory = "" }: { initialCategory?: string }) =>
         <div className="mx-auto flex max-w-7xl items-start gap-8 px-4 sm:px-6">
           {desktopOpen && <aside id="product-categories" aria-label="Product categories" className="sticky top-36 hidden max-h-[calc(100dvh-9rem)] w-60 shrink-0 overflow-y-auto rounded-xl border border-gray-200 bg-white p-3 lg:block">{homeLink}<h2 className="px-4 py-3 font-bold">Categories</h2>{categoryList(false)}</aside>}
           <div className="min-w-0 flex-1">
-            <div className="mb-6 flex flex-wrap items-end justify-between gap-2"><div><h2 className="text-2xl font-bold text-gray-900">{search ? "Search results" : category ? categoryName : "Explore products"}</h2><p className="mt-1 text-sm text-gray-500" aria-live="polite">{loading ? "Finding products..." : `${total} ${total === 1 ? "product" : "products"}${search ? ` for "${search}"` : ""}`}</p></div>{category && <button onClick={() => handleCategoryChange("")} className="text-sm font-semibold text-emerald-700 hover:underline">Clear category</button>}</div>
+            <div className="mb-6 flex flex-wrap items-end justify-between gap-2"><div><h2 className="text-2xl font-bold text-gray-900">{search ? "Search results" : saleType === "wholesale" ? "Wholesale products" : category ? categoryName : "Explore products"}</h2><p className="mt-1 text-sm text-gray-500" aria-live="polite">{loading ? "Finding products..." : `${total} ${total === 1 ? "product" : "products"}${search ? ` for "${search}"` : ""}`}</p></div>{(category || saleType) && <button onClick={() => { handleCategoryChange(""); handleSaleTypeChange(""); }} className="text-sm font-semibold text-emerald-700 hover:underline">Clear filters</button>}</div>
             {error ? <div role="alert" className="rounded-xl bg-white p-8 text-center text-gray-600">Could not load products. <button onClick={() => setRetry((value) => value + 1)} className="font-semibold text-emerald-700 underline">Try again</button></div> : <ProductsGrid products={products} loading={loading} />}
             {!loading && !error && products.length > 0 && <ProductsPagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />}
           </div>
