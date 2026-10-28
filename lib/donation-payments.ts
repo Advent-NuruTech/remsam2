@@ -3,6 +3,7 @@ import "server-only";
 import { createHash, randomUUID } from "node:crypto";
 import { FieldValue, type DocumentData, type DocumentSnapshot } from "firebase-admin/firestore";
 import { HttpError } from "@/lib/auth";
+import { sendDonationConfirmation } from "@/lib/donation-confirmation-email";
 import { DONATION_QUOTE_TTL_MS, isDonationAmount, isDonationCurrency, MAX_DONATION_AMOUNT, type DonationCurrency } from "@/lib/donation-options";
 import { firestore } from "@/lib/firestore";
 import { notifyAdmins, notifySafely, notifyUser } from "@/lib/notifications";
@@ -204,6 +205,7 @@ export async function resolveDonationPayment(reference: string) {
     if (becameSuccessful) notifySafely(Promise.all([
       notifyAdmins({ kind: "donation", title: "Donation received", body: `${String(data.name ?? "Anonymous")} gave KES ${Number(data.amountKes ?? 0).toLocaleString("en-KE")}.`, href: "/admin/donations" }),
       ...(typeof data.userId === "string" ? [notifyUser(data.userId, { kind: "donation", title: "Thank you for your donation", body: "Your Paystack donation was received successfully.", href: "/donate" })] : []),
+      sendDonationConfirmation(asDonation(updated)),
     ]), `donation ${document.id}`);
     return { state: "succeeded" as const, donation: asDonation(updated), becameSuccessful };
   }
