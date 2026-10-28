@@ -202,11 +202,22 @@ export interface Order {
   shipping: number;
   total: number;
   deliveryFeePending?: boolean;
-  paymentMethod: "mpesa" | "bank_transfer" | "cash_on_delivery" | "card" | "pending";
+  paymentMethod: "paystack" | "mpesa" | "bank_transfer" | "cash_on_delivery" | "card" | "pending";
   paymentStatus: "pending" | "paid" | "failed" | "refunded";
   orderStatus: string;
   notes?: string;
   shippingMethod: "standard" | "express" | "pickup" | "to_be_confirmed";
+  inventoryReservationActive?: boolean;
+  paystack?: {
+    reference: string;
+    authorizationUrl?: string;
+    amount: number;
+    currency: "KES";
+    status: string;
+    transactionId?: string | null;
+    initializedAt?: unknown;
+    paidAt?: unknown;
+  };
   createdAt?: unknown;
   updatedAt?: unknown;
 }

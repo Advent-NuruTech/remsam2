@@ -12,6 +12,20 @@ project settings for deployment. Never prefix a secret with `NEXT_PUBLIC_`.
 | Cloudflare R2 | `R2_ENDPOINT`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, optional `R2_PUBLIC_URL` | Product/resource images and PDFs, DOC/DOCX and PPT/PPTX downloads |
 | Cloudflare D1 | `CF_ACCOUNT_ID`, `CF_API_TOKEN`, `D1_DATABASE_ID` | Article bodies and public article/product read models |
 | YouTube | `YOUTUBE_API_KEY` | Server-side YouTube Data API key for the channel feeds |
+| Paystack | `PAYSTACK_SECRET_KEY`, optional `PAYSTACK_CALLBACK_URL` | Secure server-side checkout, verification and webhook signatures |
+
+## Paystack checkout
+
+Set `PAYSTACK_SECRET_KEY` only in the server environment. Never use the
+`NEXT_PUBLIC_` prefix and never place this key in browser code. In the Paystack
+dashboard, set the webhook URL to:
+
+`https://your-domain/api/payments/paystack/webhook`
+
+The app verifies the HMAC-SHA512 webhook signature and independently verifies
+the transaction with Paystack before marking an order paid. The callback defaults
+to `NEXT_PUBLIC_SITE_URL/payment/verify`; set `PAYSTACK_CALLBACK_URL` only when
+you need a different HTTPS callback URL.
 
 Study-material uploads are accepted at `POST /api/study-materials` as a
 multipart `file` (or `document`) field. Store the returned `fileKey`,

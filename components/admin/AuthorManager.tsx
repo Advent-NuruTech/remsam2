@@ -44,7 +44,7 @@ export default function AuthorManager() {
     finally { setSaving(false); }
   }
   return <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-    <div className="flex flex-wrap items-start justify-between gap-4"><div><h1 className="text-3xl font-bold text-gray-900">Authors</h1><p className="mt-2 text-gray-600">Manage the names and biographies shown on resources.</p></div><button type="button" onClick={() => start()} className="inline-flex items-center gap-2 rounded-lg bg-emerald-700 px-4 py-2.5 font-semibold text-white hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"><Plus size={18} /> Add author</button></div>
+    <div className="flex flex-wrap items-start justify-between gap-4"><div><h1 className="text-3xl font-bold text-gray-900">Authors</h1><p className="mt-2 text-gray-600">Manage the names and biographies shown on resources.</p></div></div>
     <PageQuickActions actions={[
       { label: "Add author", icon: <Plus size={18} />, onClick: () => start() },
       { label: "View authors", icon: <Users size={18} />, href: "#author-profiles" },

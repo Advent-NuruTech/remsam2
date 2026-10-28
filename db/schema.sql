@@ -118,3 +118,9 @@ INSERT OR IGNORE INTO admin_updates (id, title, content)
   WHERE NOT EXISTS (SELECT 1 FROM admin_update_seeds WHERE id = 'practical-christianity');
 
 INSERT OR IGNORE INTO admin_update_seeds (id) VALUES ('practical-christianity');
+
+INSERT OR IGNORE INTO admin_updates (id, title, content)
+  SELECT 'paystack-secure-checkout', 'Secure Paystack checkout is live', '<p>Customers now complete product payments through secure Paystack checkout. Product totals are verified on the server before payment is accepted.</p><p>Delivery fees remain separate. RemSam can confirm the parcel fee directly with each customer after payment.</p>'
+  WHERE NOT EXISTS (SELECT 1 FROM admin_update_seeds WHERE id = 'paystack-secure-checkout');
+
+INSERT OR IGNORE INTO admin_update_seeds (id) VALUES ('paystack-secure-checkout');

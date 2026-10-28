@@ -15,7 +15,7 @@ export async function sendOrderConfirmation(order: PublicOrder) {
     kind: "meeting", subject: `We received your order ${order.orderNumber} | Remsam Homestead`,
     headline: "Thank you for your order", letterTitle: "Your order is on its way to our team",
     preheader: `Order ${order.orderNumber} has been received.`,
-    body: "<p>Thank you for shopping with Remsam Homestead. We have received your order and will contact you to confirm your delivery details and parcel fee.</p><p>Your order is being reviewed. Payment and delivery are not yet confirmed.</p>",
+    body: "<p>Thank you for shopping with Remsam Homestead. Your Paystack payment has been received.</p><p>We will contact you to confirm delivery details and the separate parcel fee.</p>",
     buttonLabel: "View your order", buttonUrl: detailsUrl, videoUrl: "",
   }, [{ id: order.id, email: order.customer.email, name: order.customer.name }], siteUrl, `order-confirmation:${order.id}`, {
     contentAfterBody: `<div style="margin-top:24px;padding:20px;background:#f4f9f6;border:1px solid #dbe7df;border-radius:10px"><p style="margin:0 0 12px;font-weight:bold;color:#064e3b">ORDER ${escape(order.orderNumber)}</p><table role="presentation" width="100%" cellspacing="0" cellpadding="0">${rows}</table><p style="margin:16px 0 4px;font-weight:bold">Products total: ${escape(money(order.total))}</p><p style="margin:0;color:#64748b;font-size:14px">Delivery fee to be confirmed</p></div>`,

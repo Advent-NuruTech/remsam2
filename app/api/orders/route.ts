@@ -1,117 +1,17 @@
-import { FieldValue } from "firebase-admin/firestore";
-import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
-import { errorResponse, HttpError, requireAdmin, requireAuth } from "@/lib/auth";
-import { PUBLIC_PRODUCTS_TAG } from "@/lib/cache-tags";
-import {
-  beginD1ReadModelUpdate,
-  markD1ReadModelReady,
-  syncD1ProductDocument,
-} from "@/lib/d1-public-store";
+import { errorResponse, requireAdmin } from "@/lib/auth";
 import { firestore } from "@/lib/firestore";
-import { sendOrderConfirmation } from "@/lib/order-confirmation-email";
-import { notifyAdmins, notifySafely, notifyUser } from "@/lib/notifications";
-import {
-  createOrderNumber,
-  orderTimestamps,
-  serializeOrder,
-  timestamp,
-  validateOrderBody,
-} from "@/lib/orders";
+import { serializeOrder, timestamp } from "@/lib/orders";
 
-export async function POST(request: NextRequest) {
-  try {
-    const user = await requireAuth(request);
-    const body: unknown = await request.json().catch(() => null);
-    const input = validateOrderBody(body);
-    const database = firestore();
-    const orderReference = database.collection("orders").doc();
-    const productReferences = [...new Set(input.items.map((item) => item.product))].map((id) => database.collection("products").doc(id));
-
-    await database.runTransaction(async (transaction) => {
-      const products = await Promise.all(productReferences.map ( (reference) => transaction.get(reference)));
-      const byId = new Map(products.map((product) => [product.id, product]));
-      const updates = new Map<string, { variants?: Array<{ id: string; name: string; price: number; stockQuantity: number; image?: string }>; stockQuantity: number }>();
-      const items = input.items.map((requested) => {
-        const product = byId.get(requested.product);
-        if (!product?.exists) throw new HttpError(400, "A product in your cart was not found");
-        const data = product.data() ?? {};
-        const variants = Array.isArray(data.variants) ? data.variants : [];
-        const update = updates.get(product.id) ?? { variants: variants.length ? variants.map((v) => ({ ...v })) : undefined, stockQuantity: Number(data.stockQuantity ?? 0) };
-        if (data.status !== "active") throw new HttpError(400, `Product ${String(data.name)} is unavailable`);
-        const variant = update.variants?.find((v) => v.id === requested.variantId);
-        if ((update.variants && !variant) || (!update.variants && requested.variantId)) throw new HttpError(400, `Please select an available option for ${String(data.name)}`);
-        const stock = variant ? variant.stockQuantity : update.stockQuantity;
-        if ((!variant && data.inStock !== true) || !Number.isFinite(stock) || stock < requested.quantity) throw new HttpError(400, `Insufficient stock for ${String(data.name)}${variant ? ` (${variant.name})` : ""}`);
-        const price = Number(variant ? variant.price : data.price);
-        if (!Number.isFinite(price) || price <= 0) throw new Error("A product has an invalid price");
-        if (variant) variant.stockQuantity -= requested.quantity;
-        else update.stockQuantity -= requested.quantity;
-        updates.set(product.id, update);
-        return { product: product.id, ...(variant ? { variantId: variant.id, variantName: variant.name } : {}), name: String(data.name ?? "Product"), price, quantity: requested.quantity, image: variant?.image || (Array.isArray(data.images) && typeof data.images[0] === "string" ? data.images[0] : "") };
-      });
-      for (const [id, update] of updates) {
-        const stockQuantity = update.variants ? update.variants.reduce((sum, v) => sum + v.stockQuantity, 0) : update.stockQuantity;
-        transaction.update(byId.get(id)!.ref, { ...(update.variants ? { variants: update.variants } : {}), stockQuantity, inStock: stockQuantity > 0, updatedAt: FieldValue.serverTimestamp() });
-      }
-      const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-      const shipping = 0;
-      transaction.set(orderReference, {
-        userId: user.uid,
-        orderNumber: createOrderNumber(),
-        customer: input.customer,
-        items,
-        subtotal,
-        shipping,
-        total: subtotal,
-        deliveryFeePending: true,
-        paymentMethod: "pending",
-        paymentStatus: "pending",
-        orderStatus: "pending",
-        shippingMethod: "to_be_confirmed",
-        ...(input.notes ? { notes: input.notes } : {}),
-        ...orderTimestamps(),
-      });
-    });
-
-    const syncD1 = await beginD1ReadModelUpdate("products");
-    if (syncD1) {
-      try {
-        const updatedProducts = await database.getAll(...productReferences);
-        await Promise.all(updatedProducts.map(syncD1ProductDocument));
-        await markD1ReadModelReady("products");
-      } catch (error) {
-        console.error("Order completed safely in Firestore; D1 product projection remains disabled until resynchronized.", error);
-      }
-    }
-
-    revalidateTag(PUBLIC_PRODUCTS_TAG, { expire: 0 });
-    const order = serializeOrder(await orderReference.get());
-    notifySafely(Promise.all([
-      notifyUser(user.uid, {
-        kind: "order",
-        title: "Order received",
-        body: `Your order ${order.orderNumber} has been received and is awaiting confirmation.`,
-        href: "/account",
-      }),
-      notifyAdmins({
-        kind: "order",
-        title: "New order received",
-        body: `${order.customer.name} placed ${order.orderNumber} for KES ${order.total.toLocaleString("en-KE")}.`,
-        href: "/admin/orders?status=pending",
-      }),
-    ]), `order ${order.id}`);
-    let confirmationEmailSent = false;
-    try {
-      await sendOrderConfirmation(order);
-      confirmationEmailSent = true;
-    } catch (error) {
-      console.error("Order created but confirmation email failed", order.id, error);
-    }
-    return NextResponse.json({ ...order, confirmationEmailSent }, { status: 201 });
-  } catch (error) {
-    return errorResponse(error);
-  }
+/**
+ * Orders are deliberately created only by the Paystack initialization route.
+ * Keeping this legacy endpoint read-only prevents unpaid inventory reservations.
+ */
+export async function POST(_request: NextRequest) {
+  return NextResponse.json(
+    { message: "Orders must be started through secure Paystack checkout." },
+    { status: 410, headers: { "Cache-Control": "no-store" } },
+  );
 }
 
 export async function GET(request: NextRequest) {

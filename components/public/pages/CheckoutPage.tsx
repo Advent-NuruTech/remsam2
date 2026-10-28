@@ -12,13 +12,13 @@ import CheckoutForm, { type CheckoutFormData, type SavedAddress } from "@/compon
 import EmptyCheckout from "@/components/public/checkout/EmptyCheckout";
 import OrderSummary from "@/components/public/checkout/OrderSummary";
 import { api } from "@/lib/api";
-import type { PublicOrder } from "@/lib/types";
 
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const { items, total: cartTotal, clearCart } = useCart();
+  const { items, total: cartTotal } = useCart();
+  const [checkoutAttemptId] = useState(() => crypto.randomUUID());
   const [submitting, setSubmitting] = useState(false);
   const [addresses, setAddresses] = useState<SavedAddress[]>([]);
   const [selectedAddress, setSelectedAddress] = useState("");
@@ -91,15 +91,18 @@ export default function CheckoutPage() {
         setSelectedAddress(saved.id);
         setAddresses((current) => [...current.filter((item) => item.id !== saved.id), saved]);
       }
-      const order = await api.post<PublicOrder & { confirmationEmailSent: boolean }>("/api/orders", {
+      const checkout = await api.post<{ state: "pending" | "paid"; authorizationUrl?: string; orderNumber: string }>("/api/payments/paystack/initialize", {
         customer: { name: formData.name, email: formData.email, phone: formData.phone, address: { ...formData.address, country: "Kenya" } },
         items: items.map((item) => ({ product: item._id, variantId: item.variantId, quantity: item.quantity })),
         notes: formData.notes,
+        idempotencyKey: checkoutAttemptId,
       });
-      clearCart();
-      if (order.confirmationEmailSent) toast.success("Order placed! Check your email for confirmation.");
-      else toast("Order placed. We could not send a confirmation email; view the details in your account.", { duration: 7000 });
-      router.push(`/order-confirmation/${encodeURIComponent(order.orderNumber)}`);
+      if (checkout.state === "paid") {
+        router.replace(`/order-confirmation/${encodeURIComponent(checkout.orderNumber)}`);
+        return;
+      }
+      if (!checkout.authorizationUrl) throw new Error("Secure checkout could not be started. Please try again.");
+      window.location.assign(checkout.authorizationUrl);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to place order. Please try again.");
     } finally {
@@ -109,5 +112,5 @@ export default function CheckoutPage() {
 
   if (!items.length) return <div className="min-h-screen bg-gray-50 pt-24 pb-16"><div className="container mx-auto px-4"><EmptyCheckout /></div></div>;
 
-  return <><SEO title="Checkout | RemSam Homestead" description="Complete your order at RemSam Homestead. Secure checkout for organic seeds, fresh produce, and other farm products." keywords={["Checkout", "Order", "Payment", "Organic Seeds", "Kenya"]} /><div className="min-h-screen bg-gray-50 pt-24 pb-16"><div className="container mx-auto px-4"><motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8"><h1 className="text-4xl md:text-5xl font-bold"><span className="bg-gradient-to-r from-emerald-600 to-teal-600 text-transparent bg-clip-text">Checkout</span></h1><p className="text-gray-500 mt-2">Complete your order by providing your details below</p></motion.div><CheckoutAuthGate><div className="grid grid-cols-1 lg:grid-cols-3 gap-8"><div className="lg:col-span-2">{addressesLoading ? <p role="status" className="rounded-xl bg-white p-6 text-slate-600">Loading your saved details?</p> : <>{addressError && <p role="alert" className="mb-4 rounded-lg bg-amber-50 p-4 text-amber-900">{addressError}</p>}<CheckoutForm addresses={addresses} selectedAddress={selectedAddress} onSelectAddress={selectAddress} saveAddress={saveAddress} onSaveAddressChange={setSaveAddress} formData={formData} errors={errors} onChange={handleChange} onSubmit={handleSubmit} loading={submitting} /></>}</div><div className="lg:col-span-1"><OrderSummary cartItems={items} subtotal={cartTotal} shipping={0} total={cartTotal} /></div></div></CheckoutAuthGate></div></div></>;
+  return <><SEO title="Checkout | RemSam Homestead" description="Complete your order at RemSam Homestead through secure Paystack checkout. Delivery fees are confirmed separately." keywords={["Checkout", "Paystack", "Payment", "Organic Seeds", "Kenya"]} /><div className="min-h-screen bg-gray-50 pt-24 pb-16"><div className="container mx-auto px-4"><motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8"><h1 className="text-4xl md:text-5xl font-bold"><span className="bg-gradient-to-r from-emerald-600 to-teal-600 text-transparent bg-clip-text">Checkout</span></h1><p className="text-gray-500 mt-2">Pay securely with Paystack. Delivery fees are confirmed separately by RemSam.</p></motion.div><CheckoutAuthGate><div className="grid grid-cols-1 lg:grid-cols-3 gap-8"><div className="lg:col-span-2">{addressesLoading ? <p role="status" className="rounded-xl bg-white p-6 text-slate-600">Loading your saved details…</p> : <>{addressError && <p role="alert" className="mb-4 rounded-lg bg-amber-50 p-4 text-amber-900">{addressError}</p>}<CheckoutForm addresses={addresses} selectedAddress={selectedAddress} onSelectAddress={selectAddress} saveAddress={saveAddress} onSaveAddressChange={setSaveAddress} formData={formData} errors={errors} onChange={handleChange} onSubmit={handleSubmit} loading={submitting} /></>}</div><div className="lg:col-span-1"><OrderSummary cartItems={items} subtotal={cartTotal} shipping={0} total={cartTotal} /></div></div></CheckoutAuthGate></div></div></>;
 }

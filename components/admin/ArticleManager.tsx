@@ -184,7 +184,7 @@ export default function ArticleManager() {
   }
 
   return <main className="pb-16 pt-10"><div className="container mx-auto px-4">
-    <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div><h1 className="text-4xl font-bold text-emerald-700">Resource Management</h1><p className="mt-2 text-gray-600">Manage resources, documents, and the editable category structure.</p></div><button onClick={openNew} className="flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 font-semibold text-white shadow hover:bg-emerald-700"><Plus size={20} /> Add Resource</button></div>
+    <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div><h1 className="text-4xl font-bold text-emerald-700">Resource Management</h1><p className="mt-2 text-gray-600">Manage resources, documents, and the editable category structure.</p></div></div>
     <PageQuickActions actions={[
       { label: "Add resource", icon: <Plus size={18} />, onClick: openNew },
       { label: "Add category", icon: <FolderPlus size={18} />, onClick: () => void addCategory("major") },

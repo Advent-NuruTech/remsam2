@@ -19,6 +19,9 @@ export async function PUT(
       const document = await transaction.get(reference);
       if (!document.exists) throw new HttpError(404, "Order not found");
       const current = document.data() ?? {};
+      if (statuses.paymentStatus === "paid" && current.paymentMethod === "paystack") {
+        throw new HttpError(400, "Paystack payments can only be marked paid after Paystack verification.");
+      }
       if (statuses.orderStatus) {
         const config = await transaction.get(firestore().collection("settings").doc("orderStatuses"));
         const options = config.data()?.statuses ?? ["pending", "confirmed", "processing", "shipped", "delivered", "cancelled"];
