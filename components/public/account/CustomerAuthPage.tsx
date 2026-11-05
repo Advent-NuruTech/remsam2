@@ -32,14 +32,14 @@ function friendlyError(error: unknown) {
   return messages[code] || (error instanceof Error && !code ? error.message : "Something went wrong. Please try again.");
 }
 
-function GoogleMark() {
+/* function GoogleMark() {
   return <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5"><path fill="#4285F4" d="M21.6 12.23c0-.71-.06-1.39-.18-2.04H12v3.86h5.38a4.6 4.6 0 0 1-2 3.02v2.5h3.24c1.9-1.75 2.98-4.33 2.98-7.34Z"/><path fill="#34A853" d="M12 22c2.7 0 4.96-.9 6.62-2.43l-3.24-2.5c-.9.6-2.05.97-3.38.97-2.6 0-4.8-1.76-5.59-4.13H3.06v2.58A10 10 0 0 0 12 22Z"/><path fill="#FBBC05" d="M6.41 13.91A6.01 6.01 0 0 1 6.1 12c0-.66.11-1.3.31-1.91V7.51H3.06a10 10 0 0 0 0 8.98l3.35-2.58Z"/><path fill="#EA4335" d="M12 5.96c1.47 0 2.78.51 3.82 1.5l2.87-2.87A9.6 9.6 0 0 0 12 2a10 10 0 0 0-8.94 5.51l3.35 2.58C7.2 7.72 9.4 5.96 12 5.96Z"/></svg>;
-}
+} */
 
 export default function CustomerAuthPage({ mode, returnTo }: { mode: "sign-in" | "sign-up"; returnTo: string }) {
   const creating = mode === "sign-up";
   const router = useRouter();
-  const { firebaseUser, user, loading, error, signIn, register, signInWithGoogle, refreshProfile, logout } = useAuth();
+  const { firebaseUser, user, loading, error, signIn, register, /* signInWithGoogle, */ refreshProfile, logout } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -79,9 +79,10 @@ export default function CustomerAuthPage({ mode, returnTo }: { mode: "sign-in" |
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-10 sm:py-14">
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">RemSam Homestead</p><h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">{creating ? "Create your account" : "Welcome back"}</h1><p className="mt-3 leading-relaxed text-stone-600">{creating ? "Join us to keep track of your orders and account." : "Sign in to see your orders and manage your account."}</p>
         {loading || (user && !busy) ? <p role="status" className="mt-8 text-stone-600">Loading your account…</p> : firebaseUser && !busy ? <div className="mt-8 rounded-2xl border border-amber-200 bg-amber-50 p-5"><p role="alert" className="text-sm text-amber-950">{failure || error || "Your account profile could not be loaded. Please try again."}</p><div className="mt-4 flex gap-5 text-sm font-semibold"><button type="button" onClick={() => void run(recoverProfile)} className={`text-emerald-800 underline ${focusClass}`}>Try again</button><button type="button" onClick={() => void run(logout)} className={`text-emerald-800 underline ${focusClass}`}>Sign out</button></div></div> : <>
-          <button type="button" disabled={busy} onClick={() => void run(async () => { await signInWithGoogle(); })} className={`mt-8 flex min-h-12 w-full items-center justify-center gap-3 rounded-xl border border-stone-300 bg-white px-4 font-semibold text-stone-800 shadow-sm transition hover:bg-stone-50 disabled:cursor-wait disabled:opacity-60 ${focusClass}`}><GoogleMark /> Continue with Google</button>
+          {/* <button type="button" disabled={busy} onClick={() => void run(async () => { await signInWithGoogle(); })} className={`mt-8 flex min-h-12 w-full items-center justify-center gap-3 rounded-xl border border-stone-300 bg-white px-4 font-semibold text-stone-800 shadow-sm transition hover:bg-stone-50 disabled:cursor-wait disabled:opacity-60 ${focusClass}`}><GoogleMark /> Continue with Google</button>
           <div className="my-6 flex items-center gap-4 text-xs font-medium uppercase tracking-wider text-stone-400"><span className="h-px flex-1 bg-stone-200" /> or continue with email <span className="h-px flex-1 bg-stone-200" /></div>
-          <form onSubmit={submit} className="space-y-4">
+          */}
+          <form onSubmit={submit} className="mt-8 space-y-4">
             {creating && <label className="block text-sm font-semibold text-stone-700">Full name<input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" maxLength={120} required placeholder="Your name" /></label>}
             <label className="block text-sm font-semibold text-stone-700">Email address<input className={inputClass} type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required placeholder="you@example.com" /></label>
             <label className="block text-sm font-semibold text-stone-700">Password<span className="relative block"><input className={`${inputClass} pr-12`} type={visible ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete={creating ? "new-password" : "current-password"} minLength={creating ? 6 : undefined} required placeholder={creating ? "At least 6 characters" : "Your password"} /><button type="button" onClick={() => setVisible(!visible)} aria-label={visible ? "Hide password" : "Show password"} aria-pressed={visible} className={`absolute bottom-0 right-0 flex h-12 w-12 items-center justify-center text-stone-500 hover:text-emerald-700 ${focusClass}`}>{visible ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}</button></span></label>
