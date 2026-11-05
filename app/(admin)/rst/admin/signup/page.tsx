@@ -20,7 +20,7 @@ export default function AdminSignup() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (user?.role === "admin") router.replace("/admin/dashboard");
+    if (user?.role === "admin") router.replace("/rst/admin/dashboard");
     else if (user) router.replace("/");
   }, [router, user]);
 
@@ -41,7 +41,7 @@ export default function AdminSignup() {
         formData.password,
         formData.signupCode,
       );
-      router.replace("/admin/dashboard");
+      router.replace("/rst/admin/dashboard");
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : "Admin signup failed");
     } finally {
@@ -90,7 +90,7 @@ export default function AdminSignup() {
 
           <p className="mt-6 text-center text-sm text-gray-500">
             Already have an admin account?{" "}
-            <Link href="/admin/login" className="font-semibold text-emerald-600 hover:text-emerald-700">Sign in</Link>
+            <Link href="/rst/admin/login" className="font-semibold text-emerald-600 hover:text-emerald-700">Sign in</Link>
           </p>
           <div className="mt-6 rounded-lg border border-emerald-100 bg-emerald-50 p-3"><p className="flex items-center justify-center gap-2 text-center text-xs text-gray-600"><Shield size={14} className="text-emerald-500" />The access code is checked securely on the server</p></div>
         </div>

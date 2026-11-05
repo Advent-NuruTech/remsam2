@@ -174,14 +174,14 @@ const Header = () => {
     "/checkout",
     "/account",
     "/order-confirmation",
-    "/admin/login",
-    "/admin/dashboard",
-    "/admin/products",
-    "/admin/orders",
-    "/admin/articles",
-    "/admin/users",
-    "/admin/settings",
-    "/admin/analytics",
+    "/rst/admin/login",
+    "/rst/admin/dashboard",
+    "/rst/admin/products",
+    "/rst/admin/orders",
+    "/rst/admin/articles",
+    "/rst/admin/users",
+    "/rst/admin/settings",
+    "/rst/admin/analytics",
     "/terms",
     "/privacy",
     "/cookie-policy",
@@ -359,7 +359,7 @@ const Header = () => {
             {user?.role === "admin" && (
               <div className="hidden items-center gap-2 md:flex">
                 <Link
-                  href="/admin/dashboard"
+                  href="/rst/admin/dashboard"
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
                     isScrolled || isLightHeroPage
                       ? "text-gray-700 hover:bg-gray-100"
@@ -490,7 +490,7 @@ const Header = () => {
                 </div>
                 {user?.role === "admin" && (
                   <div className="shrink-0 border-t border-gray-100 bg-white px-4 pt-3 [padding-bottom:max(0.75rem,env(safe-area-inset-bottom))]">
-                    <Link href="/admin/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 rounded-lg px-4 py-3 font-medium text-emerald-700 hover:bg-emerald-50">
+                    <Link href="/rst/admin/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 rounded-lg px-4 py-3 font-medium text-emerald-700 hover:bg-emerald-50">
                       <LayoutDashboard className="h-5 w-5" /> Dashboard
                     </Link>
                     <button type="button" onClick={handleLogout} className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-gray-700 hover:bg-gray-50">

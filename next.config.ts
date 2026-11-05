@@ -28,6 +28,13 @@ const nextConfig: NextConfig = {
           { key: "Cache-Control", value: "no-store" },
         ],
       },
+      {
+        source: "/rst/admin/:path*",
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive, nosnippet" },
+          { key: "Cache-Control", value: "no-store" },
+        ],
+      },
     ];
   },
   turbopack: {

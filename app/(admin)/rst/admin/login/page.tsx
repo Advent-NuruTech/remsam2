@@ -15,7 +15,7 @@ export default function AdminLogin() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (userInfo?.role === "admin") router.replace("/admin/dashboard");
+    if (userInfo?.role === "admin") router.replace("/rst/admin/dashboard");
     else if (userInfo) router.replace("/");
   }, [router, userInfo]);
 
@@ -29,7 +29,7 @@ export default function AdminLogin() {
         router.replace("/");
         return;
       }
-      router.replace("/admin/dashboard");
+      router.replace("/rst/admin/dashboard");
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : "Login failed");
     } finally {
@@ -94,7 +94,7 @@ export default function AdminLogin() {
           </form>
           <p className="mt-6 text-center text-sm text-gray-500">
             Need an admin account?{" "}
-            <Link href="/admin/signup" className="font-semibold text-emerald-600 hover:text-emerald-700">
+            <Link href="/rst/admin/signup" className="font-semibold text-emerald-600 hover:text-emerald-700">
               Sign up with access code
             </Link>
           </p>

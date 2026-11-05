@@ -36,7 +36,7 @@ export async function POST(request: Request) {
       kind: "contact",
       title: "New meeting-link request",
       body: `${name} requested an online meeting link.`,
-      href: "/admin/mailing",
+      href: "/rst/admin/mailing",
     }), `meeting request ${contact.id}`);
     try {
       const delivery = await sendMeetingRequestWelcome({ id: memberId, email, name }, baseUrl);

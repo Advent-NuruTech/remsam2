@@ -10,7 +10,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (loading) return;
-    if (!firebaseUser) router.replace("/admin/login");
+    if (!firebaseUser) router.replace("/rst/admin/login");
     else if (user?.role !== "admin") router.replace("/");
   }, [firebaseUser, loading, router, user]);
 

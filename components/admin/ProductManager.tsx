@@ -80,7 +80,7 @@ export default function ProductManager() {
   }, []);
   useEffect(() => { void load(); }, [load]);
   useEffect(() => {
-    if (searchParams.get("action") === "new" && categories.length) { openEditor(); router.replace("/admin/products", { scroll: false }); }
+    if (searchParams.get("action") === "new" && categories.length) { openEditor(); router.replace("/rst/admin/products", { scroll: false }); }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, categories.length]);
   useEffect(() => { setPage(1); setCursors([""]); }, [query, status, categoryFilter]);

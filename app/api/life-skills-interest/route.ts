@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
         kind: "interest",
         title: "New Life Skills enquiry",
         body: `${cleanedName} is interested in ${skillArea} (${role}).`,
-        href: "/admin/life-skills",
+        href: "/rst/admin/life-skills",
       }),
       ...(identity ? [notifyUser(identity.uid, {
         kind: "interest" as const,

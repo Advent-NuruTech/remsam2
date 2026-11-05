@@ -86,13 +86,13 @@ export async function POST(request: NextRequest) {
           kind: "account",
           title: role === "admin" ? "Admin account ready" : "Welcome to RemSam Homestead",
           body: role === "admin" ? "Your administrator workspace is ready." : "Your account is ready. Order and account updates will appear here.",
-          href: role === "admin" ? "/admin/dashboard" : "/account",
+          href: role === "admin" ? "/rst/admin/dashboard" : "/account",
         }),
         ...(role === "user" ? [notifyAdmins({
           kind: "account" as const,
           title: "New customer account",
           body: `${data.name} created an account.`,
-          href: "/admin/dashboard",
+          href: "/rst/admin/dashboard",
         })] : []),
       ]), `registration ${tokenUser.uid}`);
     }

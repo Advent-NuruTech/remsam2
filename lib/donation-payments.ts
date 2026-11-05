@@ -203,7 +203,7 @@ export async function resolveDonationPayment(reference: string) {
     if (becameSuccessful) await document.ref.update({ status: "succeeded", "paystack.status": "success", "paystack.transactionId": verification.transactionId ?? null, "paystack.paidAt": verification.paidAt ?? FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp() });
     const updated = becameSuccessful ? await document.ref.get() : document;
     if (becameSuccessful) notifySafely(Promise.all([
-      notifyAdmins({ kind: "donation", title: "Donation received", body: `${String(data.name ?? "Anonymous")} gave KES ${Number(data.amountKes ?? 0).toLocaleString("en-KE")}.`, href: "/admin/donations" }),
+      notifyAdmins({ kind: "donation", title: "Donation received", body: `${String(data.name ?? "Anonymous")} gave KES ${Number(data.amountKes ?? 0).toLocaleString("en-KE")}.`, href: "/rst/admin/donations" }),
       ...(typeof data.userId === "string" ? [notifyUser(data.userId, { kind: "donation", title: "Thank you for your donation", body: "Your Paystack donation was received successfully.", href: "/donate" })] : []),
       sendDonationConfirmation(asDonation(updated)),
     ]), `donation ${document.id}`);

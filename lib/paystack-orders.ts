@@ -322,7 +322,7 @@ export async function notifyPaidOrder(order: PublicOrder) {
   try {
     await Promise.all([
     notifyUser(order.userId, { kind: "payment", title: "Payment received", body: `Your Paystack payment for ${order.orderNumber} was successful.`, href: "/account" }),
-    notifyAdmins({ kind: "payment", title: "Paystack payment received", body: `${order.customer.name} paid KES ${order.total.toLocaleString("en-KE")} for ${order.orderNumber}.`, href: "/admin/orders?paymentStatus=paid" }),
+    notifyAdmins({ kind: "payment", title: "Paystack payment received", body: `${order.customer.name} paid KES ${order.total.toLocaleString("en-KE")} for ${order.orderNumber}.`, href: "/rst/admin/orders?paymentStatus=paid" }),
     sendOrderConfirmation(order),
     ]);
   } catch (error) {

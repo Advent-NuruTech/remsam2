@@ -123,13 +123,13 @@ export default function AdminDashboard() {
 
         {error && <div role="alert" className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">{error}</div>}
         <div className="mb-8 grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
-          <StatCard title="Total Products" value={products.total} icon={Package} color="emerald" href="/admin/products" />
+          <StatCard title="Total Products" value={products.total} icon={Package} color="emerald" href="/rst/admin/products" />
           <StatCard title="Active Products" value={stats.activeProducts} icon={Star} color="emerald" />
-          <StatCard title="Published Resources" value={stats.publishedArticles} icon={FileText} color="blue" href="/admin/articles" />
-          <StatCard title="Total Orders" value={orders.length} icon={ShoppingCart} color="orange" href="/admin/orders" />
+          <StatCard title="Published Resources" value={stats.publishedArticles} icon={FileText} color="blue" href="/rst/admin/articles" />
+          <StatCard title="Total Orders" value={orders.length} icon={ShoppingCart} color="orange" href="/rst/admin/orders" />
           <StatCard title="Draft Resources" value={stats.draftArticles} icon={Clock} color="yellow" />
           <StatCard title="Paid Revenue" value={formatMoney(stats.revenue)} icon={TrendingUp} color="emerald" />
-          <StatCard title="Pending Orders" value={stats.pendingOrders} icon={Clock} color="red" href="/admin/orders?status=pending" />
+          <StatCard title="Pending Orders" value={stats.pendingOrders} icon={Clock} color="red" href="/rst/admin/orders?status=pending" />
           <StatCard title="Customers" value={stats.customers} icon={Users} color="blue" />
         </div>
 
@@ -144,7 +144,7 @@ export default function AdminDashboard() {
           <section aria-labelledby="email-activity-heading" className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm lg:col-span-2">
             <div className="flex items-center justify-between gap-4 border-b border-gray-100 p-5">
               <div><h2 id="email-activity-heading" className="text-xl font-bold text-gray-900">Latest Email Activity</h2><p className="mt-1 text-sm text-gray-500">The  most recent email deliveries</p></div>
-              <Link href="/admin/mailing" className="shrink-0 text-sm font-medium text-emerald-600 hover:text-emerald-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600">View all</Link>
+              <Link href="/rst/admin/mailing" className="shrink-0 text-sm font-medium text-emerald-600 hover:text-emerald-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600">View all</Link>
             </div>
             {emailLoading ? <p role="status" className="p-6 text-sm text-gray-500">Loading email activity...</p> : emailError ? <div role="alert" className="p-6 text-sm text-red-700">{emailError} <button onClick={() => void loadEmailActivity()} className="ml-2 font-medium underline">Try again</button></div> : emailActivity.length === 0 ? <p className="p-6 text-sm text-gray-500">No email activity yet.</p> : <ul className="max-h-96 divide-y divide-gray-100 overflow-y-auto">{emailActivity.map((item) => <li key={item.id} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-5 py-3"><div className="min-w-0"><p className="break-words font-medium text-gray-900">{item.subject || "Untitled email"}</p><p className="text-sm text-gray-500">{item.kind === "meeting" ? "Meeting" : "Newsletter"} · {emailDate(item.sentAt)}</p></div><p className="text-sm text-gray-600">{item.sent ?? 0} sent{(item.failed ?? 0) > 0 && <span className="text-red-700"> · {item.failed} failed</span>}</p></li>)}</ul>}
           </section>
@@ -153,7 +153,7 @@ export default function AdminDashboard() {
         
 
         <section className="mt-8 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
-          <div className="flex items-center justify-between border-b border-gray-100 p-5"><h2 className="text-xl font-bold text-gray-900">Recent Orders</h2><Link href="/admin/orders" className="text-sm font-medium text-emerald-600">View all</Link></div>
+          <div className="flex items-center justify-between border-b border-gray-100 p-5"><h2 className="text-xl font-bold text-gray-900">Recent Orders</h2><Link href="/rst/admin/orders" className="text-sm font-medium text-emerald-600">View all</Link></div>
           <div className="divide-y divide-gray-100">{orders.slice(0, 5).map((order) => <div key={order.id} className="flex items-center justify-between gap-4 p-4"><div className="min-w-0"><p className="font-semibold text-gray-900">{order.orderNumber}</p><p className="truncate text-sm text-gray-500">{order.customer.name} · {formatDate(order.createdAt)}</p></div><div className="text-right"><p className="font-semibold text-gray-900">{formatMoney(order.total)}</p><p className="text-xs capitalize text-gray-500">{order.orderStatus}</p></div></div>)}{!loading && orders.length === 0 && <p className="p-6 text-center text-gray-500">No orders yet.</p>}</div>
         </section>
       </div>

@@ -43,7 +43,7 @@ export async function POST(request: Request) {
       kind: "system",
       title: "New newsletter subscriber",
       body: `${name || email} joined the newsletter.`,
-      href: "/admin/mailing",
+      href: "/rst/admin/mailing",
     }), `newsletter ${id}`);
 
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||

@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
         kind: "contact",
         title: "New contact message",
         body: `${name.trim()} sent${typeof subject === "string" && subject.trim() ? `: ${subject.trim()}` : " a message"}.`,
-        href: "/admin/dashboard",
+        href: "/rst/admin/dashboard",
       }),
       ...(identity ? [notifyUser(identity.uid, {
         kind: "contact" as const,

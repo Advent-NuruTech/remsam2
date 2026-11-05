@@ -29,17 +29,17 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import NotificationBell from "@/components/notifications/NotificationBell";
 
 const links = [
-  { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/products", label: "Products", icon: Package },
-  { href: "/admin/articles", label: "Resources", icon: FileText },
-  { href: "/admin/authors", label: "Authors", icon: Users },
-  { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
-  { href: "/admin/donations", label: "Donations", icon: HeartHandshake },
-  { href: "/admin/youtube", label: "YouTube", icon: Youtube },
-  { href: "/admin/updates", label: "Updates", icon: Bell },
-  { href: "/admin/mailing", label: "Mailing", icon: Mail },
-  { href: "/admin/chat", label: "Chat", icon: MessageCircle },
-  { href: "/admin/life-skills", label: "Life Skills", icon: HandHeart },
+  { href: "/rst/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/rst/admin/products", label: "Products", icon: Package },
+  { href: "/rst/admin/articles", label: "Resources", icon: FileText },
+  { href: "/rst/admin/authors", label: "Authors", icon: Users },
+  { href: "/rst/admin/orders", label: "Orders", icon: ShoppingCart },
+  { href: "/rst/admin/donations", label: "Donations", icon: HeartHandshake },
+  { href: "/rst/admin/youtube", label: "YouTube", icon: Youtube },
+  { href: "/rst/admin/updates", label: "Updates", icon: Bell },
+  { href: "/rst/admin/mailing", label: "Mailing", icon: Mail },
+  { href: "/rst/admin/chat", label: "Chat", icon: MessageCircle },
+  { href: "/rst/admin/life-skills", label: "Life Skills", icon: HandHeart },
 ];
 
 const sidebarPreferenceKey = "remsam-admin-sidebar-collapsed";
@@ -86,13 +86,13 @@ export default function AdminNavigation({ children, account }: { children: React
 
   async function signOut() {
     await logout();
-    router.replace(account ? "/sign-in" : "/admin/login");
+    router.replace(account ? "/sign-in" : "/rst/admin/login");
   }
 
   const isAccount = !!account;
   const title = isAccount ? "RemSam Account" : "RemSam Admin";
   const subtitle = isAccount ? "Your personal workspace" : "Management workspace";
-  const home = isAccount ? "/account" : "/admin/dashboard";
+  const home = isAccount ? "/account" : "/rst/admin/dashboard";
   const sidebar = (isMobile = false) => {
     const compact = collapsed && !isMobile;
 

@@ -10,7 +10,7 @@ export default function QuickActions() {
 
   <div className="grid grid-cols-4 gap-2 sm:gap-3">
     <Link
-      href="/admin/products?action=new"
+      href="/rst/admin/products?action=new"
       className="flex min-w-0 flex-col items-center justify-center gap-1 rounded-lg bg-emerald-600 px-1 py-3 text-center text-xs font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 hover:bg-emerald-700 sm:flex-row sm:gap-2 sm:px-4 sm:text-sm"
     >
       <Plus size={18} className="shrink-0" />
@@ -18,7 +18,7 @@ export default function QuickActions() {
     </Link>
 
     <Link
-      href="/admin/articles?action=new"
+      href="/rst/admin/articles?action=new"
       className="flex min-w-0 flex-col items-center justify-center gap-1 rounded-lg bg-blue-600 px-1 py-3 text-center text-xs font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 hover:bg-blue-700 sm:flex-row sm:gap-2 sm:px-4 sm:text-sm"
     >
       <Plus size={18} className="shrink-0" />
@@ -26,7 +26,7 @@ export default function QuickActions() {
     </Link>
 
     <Link
-      href="/admin/orders?status=pending"
+      href="/rst/admin/orders?status=pending"
       className="flex min-w-0 flex-col items-center justify-center gap-1 rounded-lg bg-orange-500 px-1 py-3 text-center text-xs font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 hover:bg-orange-600 sm:flex-row sm:gap-2 sm:px-4 sm:text-sm"
     >
       <ShoppingCart size={18} className="shrink-0" />
@@ -34,7 +34,7 @@ export default function QuickActions() {
     </Link>
 
     <Link
-      href="/admin/chat"
+      href="/rst/admin/chat"
       className="flex min-w-0 flex-col items-center justify-center gap-1 rounded-lg bg-green-600 px-1 py-3 text-center text-xs font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 hover:bg-green-700 sm:flex-row sm:gap-2 sm:px-4 sm:text-sm"
     >
       <MessageCircle size={18} className="shrink-0" />
