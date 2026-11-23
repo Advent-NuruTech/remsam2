@@ -2,6 +2,7 @@
 
 ## 1. Verify locally
 
+Use Node.js 22 or later; Firebase Admin and the Firestore client require it.
 Keep real credentials only in `.env.local` and run:
 
 ```powershell
